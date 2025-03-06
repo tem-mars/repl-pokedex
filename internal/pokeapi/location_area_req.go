@@ -10,10 +10,24 @@ import (
 func (c *Client) ListLocationAreas(pageURL *string) (LocationAreaResp, error) {
 	endpoint := "/location-area"
 	fullURL := baseURL + endpoint
-	
+
 	if pageURL != nil {
-		fullURL= *pageURL
+		fullURL = *pageURL
 	}
+
+	dat, ok := c.cache.Get(fullURL)
+	if ok {
+		fmt.Println("cache hit!")
+		locationAreasResp := LocationAreaResp{}
+		err := json.Unmarshal(dat, &locationAreasResp)
+		if err != nil {
+			return LocationAreaResp{}, err
+		}
+
+		return locationAreasResp, nil
+
+	}
+	fmt.Println("cache miss!")
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
@@ -30,7 +44,7 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreaResp, error) {
 		return LocationAreaResp{}, fmt.Errorf("bad status code: %v", resp.StatusCode)
 	}
 
-	dat, err := io.ReadAll(resp.Body)
+	dat, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return LocationAreaResp{}, err
 	}
@@ -40,6 +54,8 @@ func (c *Client) ListLocationAreas(pageURL *string) (LocationAreaResp, error) {
 	if err != nil {
 		return LocationAreaResp{}, err
 	}
+
+	c.cache.Add(fullURL, dat)
 
 	return locationAreasResp, nil
 }

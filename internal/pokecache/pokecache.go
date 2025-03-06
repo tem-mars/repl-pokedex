@@ -15,8 +15,8 @@ func NewCache(interval time.Duration) Cache {
 	c := Cache{
 		cache: make(map[string]cacheEntry),
 	}
-    go c.reapLoop(interval)
-    return c
+	go c.reapLoop(interval)
+	return c
 
 }
 
@@ -39,6 +39,7 @@ func (c *Cache) reapLoop(interval time.Duration) {
 	}
 
 }
+
 func (c *Cache) reap(interval time.Duration) {
 	timeAgo := time.Now().UTC().Add(-interval)
 	for k, v := range c.cache {
